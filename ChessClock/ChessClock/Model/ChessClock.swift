@@ -42,8 +42,9 @@ final class ChessClock: ObservableObject {
             timeA = TimeInterval(firstStage.minutes * 60 + firstStage.seconds)
             timeB = TimeInterval(firstStage.minutes * 60 + firstStage.seconds)
         case .hourglass(let baseTimeSeconds):
-            self.timeA = TimeInterval(baseTimeSeconds)
-            self.timeB = TimeInterval(baseTimeSeconds)
+            let halfTime = TimeInterval(baseTimeSeconds) / 2
+            timeA = halfTime
+            timeB = halfTime
         }
     }
     
@@ -163,8 +164,9 @@ final class ChessClock: ObservableObject {
             timeA = base
             timeB = base
         case .hourglass(let baseTimeSeconds):
-            timeA = TimeInterval(baseTimeSeconds)
-            timeB = TimeInterval(baseTimeSeconds)
+            let halfTime = TimeInterval(baseTimeSeconds) / 2
+            timeA = halfTime
+            timeB = halfTime
         }
     }
     
@@ -179,11 +181,13 @@ final class ChessClock: ObservableObject {
         
         switch (timeControl, side) {
         case (.hourglass, .a):
+            let total = timeA + timeB
             timeA = max(0, timeA - tickRate)
-            timeB = min(timeB + tickRate, max(timeA, timeB)) // hourglass mechanic
+            timeB = total - timeA
         case (.hourglass, .b):
+            let total = timeA + timeB
             timeB = max(0, timeB - tickRate)
-            timeA = min(timeA + tickRate, max(timeA, timeB))
+            timeA = total - timeB
         default:
             if side == .a {
                 timeA = max(0, timeA - tickRate)
