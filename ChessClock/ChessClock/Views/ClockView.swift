@@ -105,6 +105,8 @@ struct ClockView: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
+            guard viewModel.sideFlagged == nil else { return } // block gameplay taps
+
             if !viewModel.isRunning && viewModel.activePlayer == nil {
                 // Clock hasn't started yet — tapping any side starts it
                 withAnimation(.easeInOut) {
