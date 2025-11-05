@@ -37,6 +37,8 @@ struct ClockView: View {
                             .padding()
                     }
                     Spacer()
+                    Text(viewModel.clock.timeControl.description)
+                    Spacer()
                     Button(action: { viewModel.togglePause() }) {
                         Image(systemName: "pause.fill")
                             .font(.title)

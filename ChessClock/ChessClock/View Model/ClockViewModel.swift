@@ -19,7 +19,7 @@ final class ChessClockViewModel: ObservableObject {
     @Published private(set) var timeA: TimeInterval = 0
     @Published private(set) var timeB: TimeInterval = 0
     
-    private var clock: ChessClock
+    private(set) var clock: ChessClock
     private var cancellables = Set<AnyCancellable>()
     
     init(timeControl: TimeControl) {

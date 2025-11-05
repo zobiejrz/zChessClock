@@ -26,10 +26,10 @@ enum TimeControl: Codable, CustomStringConvertible, Equatable, Hashable {
 }
 
 struct Stage: Codable, CustomStringConvertible, Equatable, Hashable {
-    let minutes: Int
-    let seconds: Int
-    let buffer: TimeBuffer
-    let movesInStage: Int?
+    var minutes: Int
+    var seconds: Int
+    var buffer: TimeBuffer
+    var movesInStage: Int?
     
     var description: String {
         var parts: [String] = []

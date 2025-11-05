@@ -21,7 +21,7 @@ final class ChessClock: ObservableObject {
     @Published private(set) var moveCounterB: Int = 0
     
     // MARK: - Config
-    private let timeControl: TimeControl
+    let timeControl: TimeControl
     private let tickRate: TimeInterval = 0.01
     private var timer: Timer?
     private var delayRemaining: TimeInterval = 0
