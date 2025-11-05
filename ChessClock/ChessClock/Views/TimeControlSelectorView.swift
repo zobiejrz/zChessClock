@@ -21,16 +21,34 @@ struct TimeControlSelectorView: View {
         NavigationStack {
             Form {
                 Section(header: Text("")) {
-                    Picker("", selection: $timeControl) {
-                        ForEach(storedTimeControlWrappers, id: \.id) { wrapper in
-                            if let tc = wrapper.timeControl {
+                    ForEach(storedTimeControlWrappers, id: \.id) { wrapper in
+                        if let tc = wrapper.timeControl {
+                            HStack {
                                 Text(tc.description)
-                                    .tag(tc)
+                                Spacer()
+                                if timeControl == tc {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.accentColor)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                timeControl = tc
                             }
                         }
                     }
-                    .labelsHidden()
-                    .pickerStyle(.inline)
+                    .onDelete { indexSet in
+                        for index in indexSet {
+                            let wrapperToDelete = storedTimeControlWrappers[index]
+                            moc.delete(wrapperToDelete)
+                        }
+                        do {
+                            try moc.save()
+                        } catch {
+                            print("Failed to delete time control: \(error)")
+                        }
+                    }
+                    
                     
                     NavigationLink("Create Custom Time Control", destination: CustomTimeControlView(didCreate: { tc in
                         let newWrapper = TimeControlWrapper(timeControl: tc, dateCreated: Date())
