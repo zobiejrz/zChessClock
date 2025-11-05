@@ -203,7 +203,7 @@ fileprivate struct StageEditorView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .onChange(of: selectedBuffer) { newType in
+                .onChange(of: selectedBuffer) { oldType, newType in
                     switch newType {
                     case .none:
                         stage.buffer = .none

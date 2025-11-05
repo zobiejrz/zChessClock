@@ -163,8 +163,8 @@ final class ChessClock: ObservableObject {
             let base = TimeInterval((stages.first!.minutes * 60) + stages.first!.seconds)
             timeA = base
             timeB = base
-        case .hourglass(let baseTimeSeconds):
-            let halfTime = TimeInterval(baseTimeSeconds) / 2
+        case .hourglass(let total):
+            let halfTime = TimeInterval(total) / 2
             timeA = halfTime
             timeB = halfTime
         }
@@ -180,14 +180,20 @@ final class ChessClock: ObservableObject {
         }
         
         switch (timeControl, side) {
-        case (.hourglass, .a):
-            let total = timeA + timeB
-            timeA = max(0, timeA - tickRate)
-            timeB = total - timeA
-        case (.hourglass, .b):
-            let total = timeA + timeB
-            timeB = max(0, timeB - tickRate)
-            timeA = total - timeB
+        case (.hourglass(let total), .a):
+            let decrement = min(tickRate, timeA)   // for A side
+            timeA -= decrement
+            timeB = TimeInterval(total) - timeA
+            
+            // Now clamp residuals
+            if timeA <= 0.001 { timeA = 0; timeB = TimeInterval(total) }
+        case (.hourglass(let total), .b):
+            let decrement = min(tickRate, timeB)   // for B side
+            timeB -= decrement
+            timeA = TimeInterval(total) - timeB
+            
+            // Now clamp residuals
+            if timeB <= 0.001 { timeB = 0; timeA = TimeInterval(total) }
         default:
             if side == .a {
                 timeA = max(0, timeA - tickRate)
@@ -200,12 +206,33 @@ final class ChessClock: ObservableObject {
     }
     
     private func checkForFlag() {
-        if timeA == 0 && sideFlagged == nil {
-            sideFlagged = .a
-            pause()
-        } else if timeB == 0 && sideFlagged == nil {
-            sideFlagged = .b
-            pause()
+        guard let side = activePlayer else { return }
+
+        switch (timeControl, side) {
+        case (.hourglass(let total), .a):
+            if timeA <= 0.001 && sideFlagged == nil {
+                sideFlagged = .a
+                timeA = 0
+                timeB = TimeInterval(total)
+                togglePause()
+            }
+        case (.hourglass(let total), .b):
+            if timeB <= 0.001 && sideFlagged == nil {
+                sideFlagged = .b
+                timeA = TimeInterval(total)
+                timeB = 0
+                togglePause()
+            }
+        default:
+            if timeA <= tickRate && sideFlagged == nil {
+                sideFlagged = .a
+                timeA = 0
+                togglePause()
+            } else if timeB <= tickRate && sideFlagged == nil {
+                sideFlagged = .b
+                timeB = 0
+                togglePause()
+            }
         }
     }
     
