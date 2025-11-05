@@ -9,6 +9,9 @@ import SwiftUI
 
 struct ClockView: View {
     @ObservedObject var viewModel: ChessClockViewModel
+    @Binding var showSelectorView: Bool
+    
+    @State private var showingTimeControlSelector = false
     
     var body: some View {
         GeometryReader { geo in
@@ -27,12 +30,17 @@ struct ClockView: View {
 
                 // Divider with controls
                 HStack {
+                    Button(action: { showSelectorView = true }) {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.title)
+                            .padding()
+                    }
+                    Spacer()
                     Button(action: { viewModel.togglePause() }) {
                         Image(systemName: "pause.fill")
                             .font(.title)
                             .padding()
                     }
-                    Spacer()
                     Button(action: { viewModel.reset() }) {
                         Image(systemName: "arrow.counterclockwise")
                             .font(.title)
