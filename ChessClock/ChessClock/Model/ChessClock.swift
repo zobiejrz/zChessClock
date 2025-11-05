@@ -208,7 +208,7 @@ final class ChessClock: ObservableObject {
     private func advanceStageIfNeeded(for player: Player) {
         guard case .normal(let stages) = timeControl else { return }
         
-        var currentIndex = (player == .a) ? clockStageA : clockStageB
+        let currentIndex = (player == .a) ? clockStageA : clockStageB
         guard currentIndex < stages.count else { return }
         
         let currentStage = stages[currentIndex]
