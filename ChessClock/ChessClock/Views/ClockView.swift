@@ -96,9 +96,11 @@ struct ClockView: View {
             if !viewModel.isRunning && viewModel.activePlayer == nil {
                 // Clock hasn't started yet — tapping any side starts it
                 viewModel.start(for: player == .a ? .b : .a)
+                Haptics.lightImpact()
             } else if viewModel.isRunning && viewModel.activePlayer == player {
                 // Clock running — only active side can switch
                 viewModel.switchTurn()
+                Haptics.lightImpact()
             }
         }
     }
