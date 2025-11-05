@@ -27,6 +27,7 @@ struct ClockView: View {
                 )
                 .rotationEffect(Angle(degrees: 180))
                 .frame(height: topHeight(totalHeight: geo.size.height))
+                .animation(.easeInOut(duration: 0.2), value: topHeight(totalHeight: geo.size.height))
 
                 // Divider with controls
                 HStack {
@@ -47,8 +48,9 @@ struct ClockView: View {
                             .padding()
                     }
                 }
-                .frame(height: geo.size.height * 0.075)
                 .background(Color.gray.opacity(0.2))
+                .frame(height: geo.size.height * 0.075)
+                .animation(.easeInOut(duration: 0.2), value: viewModel.activePlayer)
                 
                 // Bottom Side (Player B)
                 sideView(
@@ -59,6 +61,8 @@ struct ClockView: View {
                     hasFlagged: viewModel.sideFlagged == .b
                 )
                 .frame(height: bottomHeight(totalHeight: geo.size.height))
+                .animation(.easeInOut(duration: 0.2), value: bottomHeight(totalHeight: geo.size.height))
+
                 
             }
         }
@@ -103,12 +107,16 @@ struct ClockView: View {
         .onTapGesture {
             if !viewModel.isRunning && viewModel.activePlayer == nil {
                 // Clock hasn't started yet — tapping any side starts it
-                viewModel.start(for: player == .a ? .b : .a)
-                Haptics.lightImpact()
+                withAnimation(.easeInOut) {
+                    viewModel.start(for: player == .a ? .b : .a)
+                    Haptics.lightImpact()
+                }
             } else if viewModel.isRunning && viewModel.activePlayer == player {
                 // Clock running — only active side can switch
-                viewModel.switchTurn()
-                Haptics.lightImpact()
+                withAnimation(.easeInOut) {
+                    viewModel.switchTurn()
+                    Haptics.lightImpact()
+                }
             }
         }
     }
