@@ -107,13 +107,17 @@ struct ClockView: View {
     
     // MARK: - Helper
     private func timeString(from interval: TimeInterval) -> String {
-        if interval >= 10 {
-            let minutes = Int(interval) / 60
-            let seconds = Int(interval) % 60
+        // Clamp to zero to avoid negative times
+        let clamped = max(0, interval)
+        
+        if clamped >= 10 {
+            let minutes = Int(clamped) / 60
+            let seconds = Int(clamped) % 60
             return String(format: "%02d:%02d", minutes, seconds)
         } else {
-            let seconds = Int(interval)
-            let milliseconds = Int((interval - Double(seconds)) * 1000)
+            let seconds = Int(clamped)
+            // Milliseconds for display (ss.mmm)
+            let milliseconds = Int((clamped - Double(seconds)) * 1000)
             return String(format: "%02d.%03d", seconds, milliseconds)
         }
     }

@@ -22,7 +22,7 @@ final class ChessClock: ObservableObject {
     
     // MARK: - Config
     private let timeControl: TimeControl
-    private let tickRate: TimeInterval = 0.001
+    private let tickRate: TimeInterval = 0.01
     private var timer: Timer?
     
     // MARK: - Init
