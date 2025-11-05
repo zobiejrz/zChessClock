@@ -24,6 +24,7 @@ final class ChessClock: ObservableObject {
     private let timeControl: TimeControl
     private let tickRate: TimeInterval = 0.01
     private var timer: Timer?
+    private var delayRemaining: TimeInterval = 0
     
     // MARK: - Init
     init(timeControl: TimeControl) {
@@ -44,9 +45,20 @@ final class ChessClock: ObservableObject {
         guard !isRunning else { return }
         activePlayer = side
         isRunning = true
+        
+        // Apply delay at start of new turn
+        if case .normal(let stages) = timeControl, let currentStage = stages.first {
+            if case .delay(let seconds) = currentStage.buffer {
+                delayRemaining = TimeInterval(seconds)
+            } else {
+                delayRemaining = 0
+            }
+        }
+        
         timer = Timer.scheduledTimer(withTimeInterval: tickRate, repeats: true) { [weak self] _ in
             self?.tick()
         }
+        
     }
     
     func togglePause() {
@@ -77,15 +89,21 @@ final class ChessClock: ObservableObject {
             if player == .a {
                 moveCounterA += 1
                 if case .normal(let stages) = timeControl, let currentStage = stages.first {
-                    if case .increment(let seconds) = currentStage.buffer {
+                    switch currentStage.buffer {
+                    case .increment(let seconds):
                         timeA += TimeInterval(seconds)
+                    default:
+                        break
                     }
                 }
             } else {
                 moveCounterB += 1
                 if case .normal(let stages) = timeControl, let currentStage = stages.first {
-                    if case .increment(let seconds) = currentStage.buffer {
+                    switch currentStage.buffer {
+                    case .increment(let seconds):
                         timeB += TimeInterval(seconds)
+                    default:
+                        break
                     }
                 }
             }
@@ -93,6 +111,15 @@ final class ChessClock: ObservableObject {
         
         // Switch active player
         activePlayer = previousPlayer == .a ? .b : .a
+        
+        // Apply delay at start of new turn
+        if case .normal(let stages) = timeControl, let currentStage = stages.first {
+            if case .delay(let seconds) = currentStage.buffer {
+                delayRemaining = TimeInterval(seconds)
+            } else {
+                delayRemaining = 0
+            }
+        }
     }
 
     
@@ -120,6 +147,12 @@ final class ChessClock: ObservableObject {
     // MARK: - Private logic
     private func tick() {
         guard let side = activePlayer else { return }
+        
+        if delayRemaining > 0 {
+            delayRemaining = max(0, delayRemaining - tickRate)
+            return // don't decrement clock yet
+        }
+        
         switch (timeControl, side) {
         case (.hourglass, .a):
             timeA = max(0, timeA - tickRate)

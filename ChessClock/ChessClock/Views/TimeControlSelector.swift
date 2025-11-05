@@ -13,6 +13,15 @@ struct TimeControlSelectorView: View {
     
     var body: some View {
         VStack(spacing: 16) {
+            Button("1+1 delay Bullet") {
+                timeControl = .normal(
+                    stages: [
+                        Stage(minutes: 1, seconds: 0, buffer: .delay(seconds: 5), movesInStage: nil)
+                    ]
+                )
+                presented = false
+            }
+            
             Button("1+1 Bullet") {
                 timeControl = .normal(
                     stages: [
