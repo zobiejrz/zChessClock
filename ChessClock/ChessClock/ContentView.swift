@@ -10,16 +10,7 @@ import SwiftData
 
 struct ContentView: View {
     
-    @State private var timeControl: TimeControl = .normal(
-        stages: [
-            Stage(
-                minutes: 1,
-                seconds: 0,
-                buffer: .increment(seconds: 1),
-                movesInStage: nil
-            )
-        ]
-    )
+    @State private var timeControl: TimeControl = Constants.presetTimeControls.first!
     @State private var showSelectorView: Bool = false
     
     var body: some View {
@@ -31,8 +22,6 @@ struct ContentView: View {
         .edgesIgnoringSafeArea(.all)
         .popover(isPresented: $showSelectorView) {
             TimeControlSelectorView(timeControl: $timeControl, presented: $showSelectorView)
-                .padding()
-                .frame(width: 250)
         }
     }
 }
