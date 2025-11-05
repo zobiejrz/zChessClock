@@ -26,14 +26,21 @@ final class ChessClock: ObservableObject {
     private var timer: Timer?
     private var delayRemaining: TimeInterval = 0
     
+    private var clockStageA: Int = 0
+    private var clockStageB: Int = 0
+    private var movesThisStageA: Int = 0
+    private var movesThisStageB: Int = 0
+    
     // MARK: - Init
     init(timeControl: TimeControl) {
         self.timeControl = timeControl
         switch timeControl {
         case .normal(let stages):
-            // Take base time from first stage for now
-            self.timeA = TimeInterval((stages.first!.minutes * 60) + stages.first!.seconds)
-            self.timeB = TimeInterval((stages.first!.minutes * 60) + stages.first!.seconds)
+            clockStageA = 0
+            clockStageB = 0
+            let firstStage = stages.first!
+            timeA = TimeInterval(firstStage.minutes * 60 + firstStage.seconds)
+            timeB = TimeInterval(firstStage.minutes * 60 + firstStage.seconds)
         case .hourglass(let baseTimeSeconds):
             self.timeA = TimeInterval(baseTimeSeconds)
             self.timeB = TimeInterval(baseTimeSeconds)
@@ -88,7 +95,12 @@ final class ChessClock: ObservableObject {
         if let player = previousPlayer {
             if player == .a {
                 moveCounterA += 1
-                if case .normal(let stages) = timeControl, let currentStage = stages.first {
+                movesThisStageA += 1
+                advanceStageIfNeeded(for: .a)
+
+                if case .normal(let stages) = timeControl {
+                    let idx = previousPlayer == .a ? clockStageA : clockStageB
+                    let currentStage = stages[idx]
                     switch currentStage.buffer {
                     case .increment(let seconds):
                         timeA += TimeInterval(seconds)
@@ -98,7 +110,12 @@ final class ChessClock: ObservableObject {
                 }
             } else {
                 moveCounterB += 1
-                if case .normal(let stages) = timeControl, let currentStage = stages.first {
+                movesThisStageB += 1
+                advanceStageIfNeeded(for: .b)
+
+                if case .normal(let stages) = timeControl {
+                    let idx = previousPlayer == .a ? clockStageA : clockStageB
+                    let currentStage = stages[idx]
                     switch currentStage.buffer {
                     case .increment(let seconds):
                         timeB += TimeInterval(seconds)
@@ -113,7 +130,9 @@ final class ChessClock: ObservableObject {
         activePlayer = previousPlayer == .a ? .b : .a
         
         // Apply delay at start of new turn
-        if case .normal(let stages) = timeControl, let currentStage = stages.first {
+        if case .normal(let stages) = timeControl {
+            let idx = previousPlayer == .a ? clockStageA : clockStageB
+            let currentStage = stages[idx]
             if case .delay(let seconds) = currentStage.buffer {
                 delayRemaining = TimeInterval(seconds)
             } else {
@@ -132,6 +151,11 @@ final class ChessClock: ObservableObject {
         activePlayer = nil
         moveCounterA = 0
         moveCounterB = 0
+        
+        clockStageA = 0
+        clockStageB = 0
+        movesThisStageA = 0
+        movesThisStageB = 0
         
         switch timeControl {
         case .normal(let stages):
@@ -180,4 +204,34 @@ final class ChessClock: ObservableObject {
             pause()
         }
     }
+    
+    private func advanceStageIfNeeded(for player: Player) {
+        guard case .normal(let stages) = timeControl else { return }
+        
+        var currentIndex = (player == .a) ? clockStageA : clockStageB
+        guard currentIndex < stages.count else { return }
+        
+        let currentStage = stages[currentIndex]
+        
+        // Check if enough moves have been made
+        let moves = (player == .a) ? movesThisStageA : movesThisStageB
+        if let requiredMoves = currentStage.movesInStage, moves >= requiredMoves {
+            let nextIndex = currentIndex + 1
+            guard nextIndex < stages.count else { return } // No more stages
+            
+            let nextStage = stages[nextIndex]
+            let extraTime = TimeInterval(nextStage.minutes * 60 + nextStage.seconds)
+            
+            if player == .a {
+                timeA += extraTime
+                clockStageA = nextIndex
+                movesThisStageA = 0
+            } else {
+                timeB += extraTime
+                clockStageB = nextIndex
+                movesThisStageB = 0
+            }
+        }
+    }
+
 }

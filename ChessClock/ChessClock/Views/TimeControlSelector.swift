@@ -57,6 +57,17 @@ struct TimeControlSelectorView: View {
                 )
                 presented = false
             }
+            
+            Button("Staged game") {
+                timeControl = .normal(
+                    stages: [
+                        Stage(minutes: 3, seconds: 0, buffer: .none, movesInStage: 10),
+                        Stage(minutes: 2, seconds: 0, buffer: .none, movesInStage: 5),
+                        Stage(minutes: 1, seconds: 0, buffer: .increment(seconds: 30), movesInStage: nil)
+                    ]
+                )
+                presented = false
+            }
         }
         .buttonStyle(.bordered)
     }
