@@ -11,6 +11,8 @@ struct CustomTimeControlView: View {
     
     
     // MARK: - Inputs & Outputs
+    @Binding var isActive: Bool
+
     var didCreate: (TimeControl) -> Void
     
     // MARK: - State
@@ -19,7 +21,6 @@ struct CustomTimeControlView: View {
         Stage(minutes: 5, seconds: 0, buffer: .none, movesInStage: nil)
     ]
     @State private var hourglassSeconds: Int = 300 // default 5 min
-    
     var body: some View {
         NavigationStack {
             Form {
@@ -53,20 +54,13 @@ struct CustomTimeControlView: View {
                 Section {
                     Button("Create Time Control") {
                         createTimeControl()
+                        isActive = false
                     }
                     .foregroundColor(.blue)
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
             .navigationTitle("Custom Time Control")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        // Save or dismiss
-                    }
-                    .foregroundColor(.blue)
-                }
-            }
         }
     }
     

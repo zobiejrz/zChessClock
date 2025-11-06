@@ -11,6 +11,8 @@ import SwiftData
 struct TimeControlSelectorView: View {
     @Environment(\.modelContext) private var moc
 
+    @State private var makingCustomTimeControl: Bool = false
+    
     @Query(sort: \TimeControlWrapper.dateCreated, order: .forward)
     private var storedTimeControlWrappers: [TimeControlWrapper]
 
@@ -20,7 +22,7 @@ struct TimeControlSelectorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(header: Text("")) {
+                Section(header: Text("Custom Time Controls")) {
                     ForEach(storedTimeControlWrappers, id: \.id) { wrapper in
                         if let tc = wrapper.timeControl {
                             HStack {
@@ -49,18 +51,9 @@ struct TimeControlSelectorView: View {
                         }
                     }
                     
-                    
-                    NavigationLink("Create Custom Time Control", destination: CustomTimeControlView(didCreate: { tc in
-                        let newWrapper = TimeControlWrapper(timeControl: tc, dateCreated: Date())
-                        moc.insert(newWrapper)
-                        
-                        do {
-                            try moc.save()
-                            self.timeControl = tc
-                        } catch {
-                            print("Failed to save new time control: \(error)")
-                        }
-                    }))
+                    Button("Create Custom Time Control") {
+                        makingCustomTimeControl = true
+                    }
                 }
                 
                 Section(header: Text("Presets")) {
@@ -80,6 +73,19 @@ struct TimeControlSelectorView: View {
                     Button("Done") {
                         presented = false
                     }.tint(.blue)
+                }
+            }
+            .navigationDestination(isPresented: $makingCustomTimeControl) {
+                CustomTimeControlView(isActive: $makingCustomTimeControl) { tc in
+                    let newWrapper = TimeControlWrapper(timeControl: tc, dateCreated: Date())
+                    moc.insert(newWrapper)
+                    
+                    do {
+                        try moc.save()
+                        self.timeControl = tc
+                    } catch {
+                        print("Failed to save new time control: \(error)")
+                    }
                 }
             }
         }.edgesIgnoringSafeArea(.all)
