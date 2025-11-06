@@ -31,6 +31,9 @@ final class ChessClock: ObservableObject {
     private var movesThisStageA: Int = 0
     private var movesThisStageB: Int = 0
     
+    // Track how much time was spent this turn for Bronstein
+    private var moveStartTime: Date?
+    
     // MARK: - Init
     init(timeControl: TimeControl) {
         self.timeControl = timeControl
@@ -53,6 +56,7 @@ final class ChessClock: ObservableObject {
         guard !isRunning else { return }
         activePlayer = side
         isRunning = true
+        moveStartTime = Date()
         
         // Apply delay at start of new turn
         if case .normal(let stages) = timeControl, let currentStage = stages.first {
@@ -79,6 +83,7 @@ final class ChessClock: ObservableObject {
             // Currently paused → resume
             guard let side = activePlayer else { return }
             isRunning = true
+            moveStartTime = Date()
             timer = Timer.scheduledTimer(withTimeInterval: tickRate, repeats: true) { [weak self] _ in
                 self?.tick()
             }
@@ -91,6 +96,9 @@ final class ChessClock: ObservableObject {
         
         // Determine the player who just finished their move
         let previousPlayer = activePlayer
+        
+        // Compute Bronstein time spent
+        let elapsed = moveStartTime.map { Date().timeIntervalSince($0) } ?? 0
         
         // Apply increment immediately
         if let player = previousPlayer {
@@ -105,6 +113,8 @@ final class ChessClock: ObservableObject {
                     switch currentStage.buffer {
                     case .increment(let seconds):
                         timeA += TimeInterval(seconds)
+                    case .bronstein(let seconds):
+                        timeA += min(elapsed, TimeInterval(seconds))
                     default:
                         break
                     }
@@ -120,6 +130,8 @@ final class ChessClock: ObservableObject {
                     switch currentStage.buffer {
                     case .increment(let seconds):
                         timeB += TimeInterval(seconds)
+                    case .bronstein(let seconds):
+                        timeB += min(elapsed, TimeInterval(seconds))
                     default:
                         break
                     }
@@ -129,7 +141,8 @@ final class ChessClock: ObservableObject {
         
         // Switch active player
         activePlayer = previousPlayer == .a ? .b : .a
-        
+        moveStartTime = Date()
+
         // Apply delay at start of new turn
         if case .normal(let stages) = timeControl {
             let idx = previousPlayer == .a ? clockStageA : clockStageB
@@ -142,11 +155,12 @@ final class ChessClock: ObservableObject {
         }
     }
 
-    
+
     func reset() {
         timer?.invalidate()
         timer = nil
         isRunning = false
+        moveStartTime = nil
         
         sideFlagged = nil
         activePlayer = nil
@@ -207,7 +221,7 @@ final class ChessClock: ObservableObject {
     
     private func checkForFlag() {
         guard let side = activePlayer else { return }
-
+        
         switch (timeControl, side) {
         case (.hourglass(let total), .a):
             if timeA <= 0.001 && sideFlagged == nil {
