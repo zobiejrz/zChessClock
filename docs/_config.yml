@@ -1,0 +1,13 @@
+title: zChess Clock
+logo: /assets/zChessClockIcon.png
+description: >-
+  A fun, flexible chess timer
+show_downloads: false
+google_analytics:
+theme: jekyll-theme-minimal
+github:
+  is_project_page: false
+  is_user_page: false
+plugins:
+  - jekyll-feed
+  - jekyll-remote-theme

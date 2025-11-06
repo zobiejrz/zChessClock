@@ -1,4 +1,7 @@
-# Privacy Policy
+---
+layout: post
+title: Privacy Policy
+---
 
 **Last updated:** November 5, 2025
 

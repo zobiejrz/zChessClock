@@ -1,0 +1,9 @@
+---
+layout: post
+author: Ben Zobrist
+title: I made a template post
+date: 2025-10-04 17:43:28 -0400
+modified_date:
+---
+
+I made a post
