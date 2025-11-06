@@ -40,12 +40,12 @@ struct ClockView: View {
                     Text(viewModel.clock.timeControl.description)
                     Spacer()
                     Button(action: { viewModel.togglePause() }) {
-                        Image(systemName: "pause.fill")
+                        Image(systemName: viewModel.clock.sideFlagged != nil || viewModel.clock.isRunning ? "pause.fill" : "play.fill")
                             .font(.title)
                             .padding()
-                    }
+                    }.disabled(viewModel.clock.sideFlagged != nil)
                     Button(action: { viewModel.reset() }) {
-                        Image(systemName: "arrow.counterclockwise")
+                        Image(systemName: "arrow.trianglehead.2.clockwise")
                             .font(.title)
                             .padding()
                     }
